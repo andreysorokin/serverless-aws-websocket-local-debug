@@ -1,0 +1,89 @@
+frameworkVersion: '3'
+
+service: aws-syncstate
+provider:
+  name: aws
+  runtime: java8
+  stage: ${opt:stage, self:custom.default_stage}
+
+# Permissions are too wide
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:*
+#        - dynamodb:Scan
+#        - dynamodb:GetItem
+#        - dynamodb:PutItem
+#        - dynamodb:UpdateItem
+#        - dynamodb:DeleteItem
+      Resource:
+        Fn::Join:
+          - ""
+          - - Fn::GetAtt:
+              - usersTable
+              - Arn
+            - "*"
+
+
+
+package:
+  artifact: build/distributions/aws-java-websocket-sync.zip
+
+functions:
+  syncstate:
+    handler: com.rewintous.syncstate.SyncStateLambda
+    timeout: 30
+    events:
+      - websocket:
+          route: $connect
+      - websocket:
+          route: $disconnect
+      - websocket:
+          route: $default
+
+plugins:
+  - serverless-offline
+  - serverless-dynamodb
+
+custom:
+  default_stage: dev
+  serverless-offline:
+    stage: local
+  dynamodb:
+    # If you only want to use DynamoDB Local in some stages, declare them here
+    stages:
+      - local
+    start:
+      docker: true
+      port: 8000
+      inMemory: true
+      migrate: true
+      seed: true
+      convertEmptyValues: true
+
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: roomToConnection-${self:provider.stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: roomId
+            AttributeType: S
+          - AttributeName: connectionId
+            AttributeType: S
+          - AttributeName: role
+            AttributeType: S
+        KeySchema:
+          - AttributeName: roomId
+            KeyType: HASH
+          - AttributeName: role
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: ConnectionIdIndex
+            Projection:
+              ProjectionType: KEYS_ONLY
+            KeySchema:
+              - AttributeName: connectionId
+                KeyType: HASH  # Partition key for ConnectionIdIndex

@@ -1,0 +1,23 @@
+{
+  "requestContext": {
+    "routeKey": "$connect",
+    "messageId": null,
+    "eventType": "CONNECT",
+    "extendedRequestId": "exampleExtendedRequestId",
+    "requestTime": "12/Mar/2020:19:03:58 +0000",
+    "messageDirection": "IN",
+    "stage": "dev",
+    "connectedAt": 1583348638318,
+    "requestTimeEpoch": 1583348638318,
+    "identity": {
+      "sourceIp": "123.123.123.123",
+      "userAgent": "CustomUserAgentString"
+    },
+    "requestId": "exampleRequestId",
+    "domainName": "exampleDomainName.execute-api.us-east-1.amazonaws.com",
+    "connectionId": "exampleConnectionId",
+    "apiId": "exampleApiId"
+  },
+  "body": "{}",
+  "isBase64Encoded": false
+}
